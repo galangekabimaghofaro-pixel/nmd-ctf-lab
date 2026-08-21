@@ -108,7 +108,3 @@ echo "U0NFTkFSSU83N3tCTFVFX0wwR19IVW50M3JfTTRzdDNyfQ==" | base64 -d; echo ""
 * **Flag Utama Blue Team:** `SCENARIO75{BLUE_L0G_HUnt3r_M4st3r}`
 
 ```
-
-*(Tips: Saat menempelkan ke editor GitHub, gunakan **`Ctrl + Shift + V`** agar URL `git clone` tidak otomatis terformat sebagai tautan yang rusak).*
-
-```
