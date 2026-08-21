@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: admin-feedback-app
+    ports:
+      - "3075:3075"
+    volumes:
+      - /opt/admin/logs:/opt/admin/logs
+    restart: always
