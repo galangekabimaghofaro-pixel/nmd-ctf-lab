@@ -1,26 +1,32 @@
-FROM node:18-alpine
+FROM ubuntu:22.04
 
-# Install OpenSSH server, bash, dan utilitas penting
-RUN apk update && apk add --no-cache openssh bash
+# Hindari interaktif prompt saat instalasi
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Buat user 'analyst' untuk Blue Team SSH, set password 'blue_team_rocks'
-RUN adduser -D analyst && echo "analyst:blue_team_rocks" | chpasswd
+# Install Node.js, OpenSSH server, dan utilitas dasar
+RUN apt-get update && apt-get install -y \
+    curl \
+    openssh-server \
+    sudo \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 
-# Wajib: Generate SSH host keys agar sshd mau berjalan di Alpine
-RUN ssh-keygen -A
+# Buat direktori yang dibutuhkan oleh SSH
+RUN mkdir /var/run/sshd
 
-# Konfigurasi SSH agar mengizinkan password login
-RUN sed -i 's/#PermissiveRootLogin/PermissiveRootLogin/' /etc/ssh/sshd_config \
-    && echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config \
-    && echo "Port 2275" >> /etc/ssh/sshd_config
+# Buat user 'analyst' dan set password 'blue_team_rocks'
+RUN useradd -ms /bin/bash analyst && echo "analyst:blue_team_rocks" | chpasswd
 
-# Set working directory aplikasi web Anda
+# Konfigurasi port SSH ke 2275
+RUN echo "Port 2275" >> /etc/ssh/sshd_config \
+    && echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
+
 WORKDIR /app
 COPY . .
 RUN npm install
 
-# Expose port web dan port SSH
+# Expose port web dan SSH
 EXPOSE 3075 2275
 
-# Jalankan SSH server pada port 2275 di background, lalu jalankan aplikasi Node.js
-CMD ["sh", "-c", "/usr/sbin/sshd -p 2275 && npm start"]
+# Jalankan SSH server di background dan jalankan aplikasi Node.js
+CMD ["sh", "-c", "/usr/sbin/sshd && npm start"]
