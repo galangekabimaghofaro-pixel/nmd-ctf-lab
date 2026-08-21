@@ -7,4 +7,4 @@ Repositori ini berisi infrastruktur dan kode laboratorium "Red vs. Blue" CTF unt
 1. **Clone Repositori:**
    ```bash
    git clone <URL_REPOSITORI_GITHUB_KAMU>
-   cd nmd-ctf-lab
+   cd nmd-ctf-labS
