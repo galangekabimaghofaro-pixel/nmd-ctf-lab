@@ -6,67 +6,61 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// PHASE 1: Reconnaissance Header Expose
+// FASE 1: Header Rekondisi
 app.use((req, res, next) => {
     res.setHeader('X-Powered-By', 'SCENARIO75{Node.js}');
     next();
 });
 
-// Hidden Robots.txt Path
+// Path tersembunyi robots.txt
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
     res.send("Disallow: /api/verify-mfa # SCENARIO75{/api/verify-mfa}\nDisallow: /dashboard # SCENARIO75{/dashboard}");
 });
 
-// Session Initialization & Landing Page
+// Inisialisasi Sesi Awal
 app.get('/', (req, res) => {
     if (!req.cookies.pre_mfa_session) {
-        res.cookie('pre_mfa_session', 'pending_mfa_verification', { httpOnly: false }); // SCENARIO75{pre_mfa_session}, SCENARIO75{pending_mfa_verification}, SCENARIO75{False}
+        res.cookie('pre_mfa_session', 'pending_mfa_verification', { httpOnly: false });
     }
     res.send(`
         <html>
         <!-- SCENARIO75{robots.txt} -->
         <body>
             <h1>Admin Feedback System</h1>
-            <form action="/submit-feedback" method="POST">
-                <textarea name="feedback" placeholder="Enter feedback"></textarea>
-                <button type="submit">Submit</button>
+            <form action="/feedback" method="POST">
+                <textarea name="feedback" placeholder="Tulis feedback..."></textarea>
+                <button type="submit">Kirim</button>
             </form>
         </body>
         </html>
     `);
 });
 
-// PHASE 2: WAF & Feedback Endpoint
-app.post('/submit-feedback', (req, res) => { // SCENARIO75{POST}
+// FASE 2: WAF & Endpoint Feedback
+app.post('/feedback', (req, res) => {
     const feedback = req.body.feedback || '';
 
-    // WAF Logic blocking <script>
     if (feedback.includes('<script>')) {
+        console.error("[ERROR] 18:50:15 WAF Blocked <script> tag injection attempt from 10.10.14.50");
         return res.status(403).send("WAF Blocked: SCENARIO75{403}");
     }
 
-    res.send("Feedback submitted successfully!");
+    res.send("Feedback berhasil dikirim!");
 });
 
-// Dummy MFA Endpoint
-app.get('/api/verify-mfa', (req, res) => {
-    res.send("MFA Endpoint");
-});
+// FASE 3: Bypass MFA & Dashboard
+app.get('/dashboard', (req, res) => {
+    const session = req.cookies.adm_sess || req.cookies.pre_mfa_session;
 
-// PHASE 3: Dashboard & MFA Bypass
-app.get('/dashboard', (req, res) => { // SCENARIO75{/dashboard}
-    const session = req.cookies.adm_sess || req.cookies.pre_mfa_session; // SCENARIO75{adm_sess}
-
-    if (session) {
+    if (session === 'pending_mfa_verification' || (session && session.startsWith('adm_sess'))) {
         return res.send(`
             <html>
             <body>
-                <h1>Admin Dashboard</h1>
                 <div class="xss-payload">
-                    ${req.query.payload || 'SCENARIO75{xss-payload}'}
+                    ${req.query.payload || 'Selamat Datang Admin'}
                 </div>
-                <p>Flag: SCENARIO75{RED_C00k13_MFA_Byp4ss_0wn3d}</p>
+                <p>Flag Akhir: SCENARIO75{RED_C00k13_MFA_Byp4ss_0wn3d}</p>
             </body>
             </html>
         `);
@@ -74,4 +68,4 @@ app.get('/dashboard', (req, res) => { // SCENARIO75{/dashboard}
     res.status(401).send("Unauthorized");
 });
 
-app.listen(3075, () => console.log('App running on port 3075'));
+app.listen(3075, () => console.log('Server berjalan pada port 3075'));
