@@ -6,6 +6,7 @@ services:
     container_name: admin-feedback-app
     ports:
       - "3075:3075"
+      - "2275:2275"
     volumes:
       - /opt/admin/logs:/opt/admin/logs
     restart: always
